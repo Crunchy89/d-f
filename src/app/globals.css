@@ -92,17 +92,76 @@ body {
   animation-delay: 0.7s;
 }
 
+.d1 {
+  --d: 0.08s;
+}
+
+.d2 {
+  --d: 0.16s;
+}
+
+.d3 {
+  --d: 0.24s;
+}
+
+.d4 {
+  --d: 0.32s;
+}
+
+.d5 {
+  --d: 0.4s;
+}
+
+.d6 {
+  --d: 0.48s;
+}
+
+.d7 {
+  --d: 0.56s;
+}
+
+.d8 {
+  --d: 0.64s;
+}
+
+.d9 {
+  --d: 0.72s;
+}
+
+.d10 {
+  --d: 0.8s;
+}
+
+.d11 {
+  --d: 0.88s;
+}
+
+.d12 {
+  --d: 0.96s;
+}
+
+.reveal-line,
+.reveal-photo {
+  opacity: 0;
+}
+
+.invite-open .reveal.is-in .reveal-line {
+  animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.18s + var(--d, 0s));
+}
+
+.invite-open .reveal.is-in .reveal-photo {
+  animation: fade-in-scale 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.18s + var(--d, 0s));
+}
+
 .reveal {
   opacity: 0;
-  transform: translateY(22px);
-  transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.45s ease;
 }
 
 .reveal.is-in {
   opacity: 1;
-  transform: none;
 }
 
 @keyframes fade-up {
@@ -131,6 +190,17 @@ body {
   }
   to {
     transform: scale(1.12);
+  }
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -170,11 +240,15 @@ body {
   .anim-fade-in,
   .anim-cover-zoom,
   .anim-slide-up,
-  .seal {
+  .seal,
+  .invite-open .reveal.is-in .reveal-line,
+  .invite-open .reveal.is-in .reveal-photo {
     animation: none;
   }
 
-  .reveal {
+  .reveal,
+  .reveal-line,
+  .reveal-photo {
     opacity: 1;
     transform: none;
     transition: none;

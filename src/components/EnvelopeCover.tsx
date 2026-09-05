@@ -20,7 +20,7 @@ export function EnvelopeCover({
     <div className="relative h-full">
       <div
         className={`h-full overflow-hidden transition-opacity duration-700 ${
-          opened ? "opacity-100" : "pointer-events-none opacity-0"
+          opened ? "invite-open opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
         {children}
