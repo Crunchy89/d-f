@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FloatingNav, type SectionId } from "@/components/FloatingNav";
 import { CoupleHome } from "@/components/CoupleHome";
 import { wedding } from "@/data/wedding";
@@ -20,104 +14,97 @@ const sections: SectionId[] = [
   "gift",
 ];
 
-function SectionCard({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-gold/60 bg-[rgba(42,20,52,0.42)] px-5 py-8 text-center backdrop-blur-[2px]">
-      {children}
-    </div>
-  );
-}
-
 function Section({
   id,
+  active,
   children,
-  scrollerRef,
 }: {
   id: SectionId;
+  active: SectionId;
   children: ReactNode;
-  scrollerRef: RefObject<HTMLDivElement | null>;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const [visible, setVisible] = useState(false);
+  const shown = id === active;
+  const [play, setPlay] = useState(0);
 
   useEffect(() => {
-    const el = ref.current;
-    const root = scrollerRef.current;
-    if (!el || !root) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { root, threshold: 0.16, rootMargin: "0px 0px -6% 0px" },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [scrollerRef]);
+    if (!shown) return;
+    const frame = window.requestAnimationFrame(() => setPlay((n) => n + 1));
+    return () => window.cancelAnimationFrame(frame);
+  }, [shown]);
 
   return (
-    <section id={id} ref={ref} className="px-5 py-8">
-      <div className={`reveal ${visible ? "is-in" : ""}`}>
-        <SectionCard>{children}</SectionCard>
-      </div>
+    <section
+      id={id}
+      className={`absolute inset-0 flex flex-col overflow-hidden px-5 pt-8 pb-20 transition-opacity duration-500 ${
+        shown ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"
+      }`}
+    >
+      {shown && play > 0 ? (
+        <div key={play} className="reveal is-in my-auto text-center">
+          {children}
+        </div>
+      ) : null}
     </section>
   );
 }
 
 export function Invitation() {
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<SectionId>("home");
+  const lockedRef = useRef(false);
+  const touchStartY = useRef(0);
   const [active, setActive] = useState<SectionId>("home");
 
-  useEffect(() => {
-    const root = scrollerRef.current;
-    if (!root) return;
-
-    function syncActive() {
-      if (!root) return;
-
-      const { scrollTop, clientHeight, scrollHeight } = root;
-      if (scrollTop + clientHeight >= scrollHeight - 16) {
-        setActive(sections[sections.length - 1]);
-        return;
-      }
-
-      const marker = root.getBoundingClientRect().top + clientHeight * 0.32;
-      let current: SectionId = sections[0];
-      for (const id of sections) {
-        const el = root.querySelector<HTMLElement>(`#${id}`);
-        if (!el) continue;
-        if (el.getBoundingClientRect().top <= marker) current = id;
-      }
-      setActive(current);
-    }
-
-    syncActive();
-    root.addEventListener("scroll", syncActive, { passive: true });
-    return () => root.removeEventListener("scroll", syncActive);
-  }, []);
-
-  function scrollTo(id: SectionId) {
+  function goTo(id: SectionId) {
+    activeRef.current = id;
     setActive(id);
-    const root = scrollerRef.current;
-    const target = root?.querySelector<HTMLElement>(`#${id}`);
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function shift(delta: number) {
+    if (lockedRef.current) return;
+    const index = sections.indexOf(activeRef.current);
+    const next = sections[index + delta];
+    if (!next) return;
+    lockedRef.current = true;
+    goTo(next);
+    window.setTimeout(() => {
+      lockedRef.current = false;
+    }, 550);
+  }
+
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root) return;
+
+    function onWheel(event: WheelEvent) {
+      event.preventDefault();
+      if (Math.abs(event.deltaY) < 16) return;
+      shift(event.deltaY > 0 ? 1 : -1);
+    }
+
+    root.addEventListener("wheel", onWheel, { passive: false });
+    return () => root.removeEventListener("wheel", onWheel);
+  }, []);
+
   return (
-    <div className="relative h-full">
+    <div className="relative h-full overflow-hidden">
       <div
-        ref={scrollerRef}
-        className="h-full overflow-y-auto overscroll-y-contain pb-20"
+        ref={pageRef}
+        className="relative h-full touch-none overflow-hidden"
+        onTouchStart={(event) => {
+          touchStartY.current = event.touches[0].clientY;
+        }}
+        onTouchEnd={(event) => {
+          const dy = event.changedTouches[0].clientY - touchStartY.current;
+          if (dy < -48) shift(1);
+          if (dy > 48) shift(-1);
+        }}
       >
-        <Section id="home" scrollerRef={scrollerRef}>
+        <Section id="home" active={active}>
           <CoupleHome />
         </Section>
 
-        <Section id="schedule" scrollerRef={scrollerRef}>
+        <Section id="schedule" active={active}>
           <p className="reveal-line d1 readable font-sans text-sm font-light tracking-[0.28em] uppercase">
             Event
           </p>
@@ -136,7 +123,7 @@ export function Invitation() {
             alt="26 September 2026"
             width={352}
             height={310}
-            className="reveal-photo d5 mx-auto mt-6 mb-6 h-auto w-44 mix-blend-screen"
+            className="reveal-photo-zoom d5 mx-auto mt-6 mb-6 h-auto w-44 mix-blend-screen"
           />
           <p className="reveal-line d6 readable mt-2 font-sans text-[15px]">
             Akad Nikah : {wedding.akad}
@@ -161,7 +148,7 @@ export function Invitation() {
               href={wedding.mapUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex rounded-full border border-gold/70 px-7 py-2.5 font-sans text-sm tracking-[0.16em] text-white uppercase"
+              className="inline-flex rounded-full border-2 border-gold bg-[rgba(42,20,52,0.88)] px-7 py-2.5 font-sans text-sm tracking-[0.16em] text-ivory uppercase shadow-[0_4px_16px_rgba(0,0,0,0.35)]"
             >
               Get Direction
             </a>
@@ -179,7 +166,7 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="gallery" scrollerRef={scrollerRef}>
+        <Section id="gallery" active={active}>
           <p className="reveal-line d1 readable font-sans text-sm font-light tracking-[0.28em] uppercase">
             Galery
           </p>
@@ -237,7 +224,7 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="love" scrollerRef={scrollerRef}>
+        <Section id="love" active={active}>
           <p className="reveal-line d1 readable font-script text-6xl leading-none">
             D<span className="text-gold">&</span>F
           </p>
@@ -255,11 +242,11 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="gift" scrollerRef={scrollerRef}>
+        <Section id="gift" active={active}>
           <p className="reveal-line d1 readable font-sans text-lg font-bold tracking-[0.2em] uppercase">
             Send Gift
           </p>
-          <div className="reveal-photo d2 mx-auto mt-6 w-54 rounded-2xl bg-white p-3">
+          <div className="reveal-photo-zoom d2 mx-auto mt-6 w-54 rounded-2xl bg-white p-3">
             <img
               src={wedding.giftQr}
               alt="QR send gift"
@@ -292,7 +279,7 @@ export function Invitation() {
         </Section>
       </div>
 
-      <FloatingNav active={active} onSelect={scrollTo} />
+      <FloatingNav active={active} onSelect={goTo} />
     </div>
   );
 }

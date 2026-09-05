@@ -16,8 +16,7 @@ const items: { id: SectionId; label: string; icon: ReactNode }[] = [
     label: "Beranda",
     icon: (
       <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" />
-        <path d="M11.2 10.2c.4-1 1.2-1.5 1.8-1.2.3.2.4.6.3 1.1-.3 1.1-1.6 1.6-1.6 1.6" />
+        <path d="M12 20s-7-4.4-7-9.2C5 8 7.2 6 9.6 6c1.5 0 2.4.7 2.4 1.6C12 6.7 12.9 6 14.4 6 16.8 6 19 8 19 10.8 19 15.6 12 20 12 20Z" />
       </svg>
     ),
   },
@@ -36,17 +35,18 @@ const items: { id: SectionId; label: string; icon: ReactNode }[] = [
     label: "Galeri",
     icon: (
       <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <rect x="3.5" y="6" width="17" height="12" rx="3" />
-        <path d="m10 12 4 2.4-4 2.4V12Z" fill="currentColor" stroke="none" />
+        <rect x="7" y="4.5" width="13" height="10.5" rx="1.6" />
+        <rect x="4" y="8.5" width="13" height="10.5" rx="1.6" />
       </svg>
     ),
   },
   {
     id: "love",
-    label: "Kisah",
+    label: "Pesan",
     icon: (
       <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <path d="M12 20s-7-4.4-7-9.2C5 8 7.2 6 9.6 6c1.5 0 2.4.7 2.4 1.6C12 6.7 12.9 6 14.4 6 16.8 6 19 8 19 10.8 19 15.6 12 20 12 20Z" />
+        <rect x="3.5" y="6" width="17" height="12" rx="2" />
+        <path d="m4.5 8 7.5 5.2L19.5 8" />
       </svg>
     ),
   },
