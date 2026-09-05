@@ -27,21 +27,21 @@ export function EnvelopeCover({
       </div>
 
       <div
-        className={`absolute inset-0 z-20 overflow-hidden transition-all duration-700 ${
+        className={`absolute inset-0 z-20 overflow-hidden transition-all duration-700 ease-out ${
           opened
-            ? "pointer-events-none translate-y-[-8%] opacity-0"
-            : "opacity-100"
+            ? "pointer-events-none -translate-y-8 scale-[1.04] opacity-0"
+            : "translate-y-0 scale-100 opacity-100"
         }`}
       >
         <Image
           src="/asset/d-and-f-1.webp"
           alt={`${wedding.couple.partnerOne} and ${wedding.couple.partnerTwo}`}
           fill
-          priority
+          preload
           sizes="390px"
-          className="object-cover object-[center_62%]"
+          className="anim-cover-zoom object-cover object-[center_62%]"
         />
-        <div className="cover-overlay absolute inset-0" />
+        <div className="cover-overlay anim-fade-in absolute inset-0" />
 
         <button
           type="button"
@@ -49,18 +49,18 @@ export function EnvelopeCover({
           className="relative z-10 flex h-full w-full flex-col items-center justify-between px-8 pt-16 pb-12 text-center"
         >
           <div>
-            <p className="font-sans text-sm tracking-[0.32em] text-gold/90 uppercase">
+            <p className="anim-fade-up font-sans text-sm tracking-[0.32em] text-gold/90 uppercase">
               The Wedding Of
             </p>
-            <h1 className="mt-4 font-script text-[4.2rem] leading-none text-ivory">
+            <h1 className="anim-fade-up anim-delay-1 mt-4 font-script text-[4.2rem] leading-none text-ivory">
               {wedding.couple.partnerOne}
               <span className="mx-2 font-script text-4xl text-gold">&</span>
               {wedding.couple.partnerTwo}
             </h1>
-            <p className="mt-3 font-serif text-xl text-ivory/90">
+            <p className="anim-fade-up anim-delay-2 mt-3 font-serif text-xl text-ivory/90">
               {wedding.date.display}
             </p>
-            <div className="mt-5">
+            <div className="anim-fade-up anim-delay-3 mt-5">
               <GuestGreeting
                 name={guestName}
                 dearClassName="font-sans text-sm tracking-[0.24em] text-gold/90 uppercase"
@@ -69,8 +69,8 @@ export function EnvelopeCover({
             </div>
           </div>
 
-          <div>
-            <span className="seal mx-auto grid size-[4.4rem] place-items-center rounded-full bg-plum shadow-[0_8px_24px_rgba(0,0,0,0.35)] ring-4 ring-gold/50">
+          <div className="anim-fade-up anim-delay-4">
+            <span className="seal mx-auto grid size-[4.4rem] place-items-center rounded-full bg-plum shadow-[0_8px_24px_rgba(0,0,0,0.35)] ring-4 ring-gold/50 transition-transform duration-200 active:scale-95">
               <span className="font-script text-2xl text-ivory">
                 {wedding.couple.partnerOne[0]}
                 {wedding.couple.partnerTwo[0]}

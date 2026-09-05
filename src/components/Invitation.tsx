@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { FloatingNav, type SectionId } from "@/components/FloatingNav";
 import { CoupleHome } from "@/components/CoupleHome";
 import { wedding } from "@/data/wedding";
@@ -25,13 +31,39 @@ function SectionCard({ children }: { children: ReactNode }) {
 function Section({
   id,
   children,
+  scrollerRef,
 }: {
   id: SectionId;
   children: ReactNode;
+  scrollerRef: RefObject<HTMLDivElement | null>;
 }) {
+  const ref = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    const root = scrollerRef.current;
+    if (!el || !root) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { root, threshold: 0.16, rootMargin: "0px 0px -6% 0px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [scrollerRef]);
+
   return (
-    <section id={id} className="px-5 py-8">
-      <SectionCard>{children}</SectionCard>
+    <section id={id} ref={ref} className="px-5 py-8">
+      <div className={`reveal ${visible ? "is-in" : ""}`}>
+        <SectionCard>{children}</SectionCard>
+      </div>
     </section>
   );
 }
@@ -81,11 +113,11 @@ export function Invitation() {
         ref={scrollerRef}
         className="h-full overflow-y-auto overscroll-y-contain pb-20"
       >
-        <Section id="home">
+        <Section id="home" scrollerRef={scrollerRef}>
           <CoupleHome />
         </Section>
 
-        <Section id="schedule">
+        <Section id="schedule" scrollerRef={scrollerRef}>
           <p className="readable font-sans text-sm font-light tracking-[0.28em] uppercase">
             Event
           </p>
@@ -145,7 +177,7 @@ export function Invitation() {
           <p className="readable mt-8 font-script text-6xl leading-none">D&F</p>
         </Section>
 
-        <Section id="gallery">
+        <Section id="gallery" scrollerRef={scrollerRef}>
           <p className="readable font-sans text-sm font-light tracking-[0.28em] uppercase">
             Galery
           </p>
@@ -203,7 +235,7 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="love">
+        <Section id="love" scrollerRef={scrollerRef}>
           <p className="readable font-script text-6xl leading-none">D&F</p>
           <p
             dir="rtl"
@@ -219,7 +251,7 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="gift">
+        <Section id="gift" scrollerRef={scrollerRef}>
           <p className="readable font-sans text-lg font-bold tracking-[0.2em] uppercase">
             Send Gift
           </p>

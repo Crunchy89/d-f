@@ -72,7 +72,7 @@ export function FloatingNav({
   const { playing, toggle } = useMusic();
 
   return (
-    <nav className="absolute inset-x-[10px] bottom-[10px] z-30 grid h-12 grid-cols-6 rounded-full bg-[rgba(58,24,68,0.45)] px-3 shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md">
+    <nav className="anim-slide-up absolute inset-x-[10px] bottom-[10px] z-30 grid h-12 grid-cols-6 rounded-full bg-[rgba(58,24,68,0.45)] px-3 shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md">
       <button
         type="button"
         onClick={toggle}
@@ -96,8 +96,8 @@ export function FloatingNav({
           type="button"
           onClick={() => onSelect(item.id)}
           aria-label={item.label}
-          className={`grid place-items-center ${
-            active === item.id ? "text-gold" : "text-white"
+          className={`grid place-items-center transition-all duration-300 ${
+            active === item.id ? "scale-110 text-gold" : "scale-100 text-white"
           }`}
         >
           {item.icon}
