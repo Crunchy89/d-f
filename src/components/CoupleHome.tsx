@@ -63,7 +63,7 @@ export function CoupleHome() {
           {wedding.couple.partnerOneFull}
         </p>
         <div />
-        <p className={`reveal-line d10 mt-3 font-script text-[1.35rem] leading-tight ${text}`}>
+        <p className={`reveal-line d6 mt-3 font-script text-[1.35rem] leading-tight ${text}`}>
           {wedding.couple.partnerTwoFull}
         </p>
 
@@ -71,7 +71,7 @@ export function CoupleHome() {
           {wedding.couple.groomParents}
         </p>
         <div />
-        <p className={`reveal-line d11 mt-2 font-sans text-[11px] leading-relaxed ${muted}`}>
+        <p className={`reveal-line d7 mt-2 font-sans text-[11px] leading-relaxed ${muted}`}>
           {wedding.couple.brideParents}
         </p>
       </div>

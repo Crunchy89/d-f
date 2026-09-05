@@ -35,12 +35,15 @@ function Section({
   return (
     <section
       id={id}
-      className={`absolute inset-0 flex flex-col overflow-hidden px-5 pt-8 pb-20 transition-opacity duration-500 ${
+      className={`absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-y-contain px-5 pt-10 pb-32 transition-opacity duration-500 ${
         shown ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"
       }`}
     >
       {shown && play > 0 ? (
-        <div key={play} className="reveal is-in my-auto text-center">
+        <div
+          key={play}
+          className="reveal is-in flex min-h-full flex-col justify-center py-8 text-center"
+        >
           {children}
         </div>
       ) : null}
@@ -48,12 +51,65 @@ function Section({
   );
 }
 
+function PageHints({
+  index,
+  onPrev,
+  onNext,
+}: {
+  index: number;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const hasPrev = index > 0;
+  const hasNext = index < sections.length - 1;
+
+  return (
+    <>
+      {hasPrev ? (
+        <button
+          type="button"
+          aria-label="Halaman sebelumnya"
+          onClick={onPrev}
+          className="absolute top-1/2 left-0.5 z-20 -translate-y-1/2 p-1 text-white/20"
+        >
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="m14.5 5-6 7 6 7" />
+          </svg>
+        </button>
+      ) : null}
+      {hasNext ? (
+        <button
+          type="button"
+          aria-label="Halaman berikutnya"
+          onClick={onNext}
+          className="absolute top-1/2 right-0.5 z-20 -translate-y-1/2 p-1 text-white/20"
+        >
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="m9.5 5 6 7-6 7" />
+          </svg>
+        </button>
+      ) : null}
+      <div className="absolute inset-x-0 bottom-[4.35rem] z-20 flex justify-center gap-1.5">
+        {sections.map((id, i) => (
+          <span
+            key={id}
+            className={`size-1 rounded-full ${
+              i === index ? "bg-gold/65" : "bg-white/20"
+            }`}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
 export function Invitation() {
   const pageRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<SectionId>("home");
   const lockedRef = useRef(false);
-  const touchStartY = useRef(0);
+  const touchStart = useRef({ x: 0, y: 0 });
   const [active, setActive] = useState<SectionId>("home");
+  const pageIndex = sections.indexOf(active);
 
   function goTo(id: SectionId) {
     activeRef.current = id;
@@ -72,14 +128,29 @@ export function Invitation() {
     }, 550);
   }
 
+  function activeScroller() {
+    return pageRef.current?.querySelector<HTMLElement>(
+      `#${activeRef.current}`,
+    );
+  }
+
   useEffect(() => {
     const root = pageRef.current;
     if (!root) return;
 
     function onWheel(event: WheelEvent) {
-      event.preventDefault();
-      if (Math.abs(event.deltaY) < 16) return;
-      shift(event.deltaY > 0 ? 1 : -1);
+      const scroller = activeScroller();
+      if (!scroller) return;
+      const atTop = scroller.scrollTop <= 2;
+      const atBottom =
+        scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
+      if (event.deltaY > 20 && atBottom) {
+        event.preventDefault();
+        shift(1);
+      } else if (event.deltaY < -20 && atTop) {
+        event.preventDefault();
+        shift(-1);
+      }
     }
 
     root.addEventListener("wheel", onWheel, { passive: false });
@@ -90,14 +161,28 @@ export function Invitation() {
     <div className="relative h-full overflow-hidden">
       <div
         ref={pageRef}
-        className="relative h-full touch-none overflow-hidden"
+        className="relative h-full overflow-hidden"
         onTouchStart={(event) => {
-          touchStartY.current = event.touches[0].clientY;
+          touchStart.current = {
+            x: event.touches[0].clientX,
+            y: event.touches[0].clientY,
+          };
         }}
         onTouchEnd={(event) => {
-          const dy = event.changedTouches[0].clientY - touchStartY.current;
-          if (dy < -48) shift(1);
-          if (dy > 48) shift(-1);
+          const dx = event.changedTouches[0].clientX - touchStart.current.x;
+          const dy = event.changedTouches[0].clientY - touchStart.current.y;
+          if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 48) {
+            shift(dx < 0 ? 1 : -1);
+            return;
+          }
+          const scroller = activeScroller();
+          if (!scroller || Math.abs(dy) < 56) return;
+          const atTop = scroller.scrollTop <= 2;
+          const atBottom =
+            scroller.scrollTop + scroller.clientHeight >=
+            scroller.scrollHeight - 2;
+          if (dy < 0 && atBottom) shift(1);
+          if (dy > 0 && atTop) shift(-1);
         }}
       >
         <Section id="home" active={active}>
@@ -279,6 +364,11 @@ export function Invitation() {
         </Section>
       </div>
 
+      <PageHints
+        index={pageIndex}
+        onPrev={() => shift(-1)}
+        onNext={() => shift(1)}
+      />
       <FloatingNav active={active} onSelect={goTo} />
     </div>
   );
