@@ -1,5 +1,3 @@
-import { wedding } from "@/data/wedding";
-
 export const invitationImages = [
   "/asset/background.webp",
   "/asset/d-and-f-1.webp",
@@ -12,7 +10,7 @@ export const invitationImages = [
   "/asset/gallery_4.webp",
   "/asset/gallery_5.webp",
   "/asset/gallery_6.webp",
-  wedding.giftQr,
+  "/asset/gift.webp",
 ] as const;
 
 export const invitationAudio = "/asset/theme.mp3";

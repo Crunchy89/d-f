@@ -53,11 +53,9 @@ export const wedding = {
     "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir.",
   quranSource: "QS. Ar-Rum Ayat 21",
   gifts: [
-    { bank: "Bank Danamon", name: "XXXXXXXX", number: "" },
-    { bank: "Bank BCA", name: "XXXXXXXX", number: "" },
+    { bank: "Bank Mandiri", name: "Sofiyyah Aziizah", number: "1610013070235" },
+    { bank: "Bank BNI", name: "Sofiyyah Aziizah", number: "1852060531" },
   ],
-  giftQr:
-    "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=Wedding%20Gift%20Didiet%20%26%20Fiya",
 } as const;
 
 export type Wedding = typeof wedding;

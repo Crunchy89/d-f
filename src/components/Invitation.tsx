@@ -14,16 +14,40 @@ const sections: SectionId[] = [
   "gift",
 ];
 
+const sectionFx: Record<SectionId, "paper" | "cube" | "card" | "fold" | "box"> = {
+  home: "paper",
+  schedule: "cube",
+  gallery: "card",
+  love: "fold",
+  gift: "box",
+};
+
+function turnClass(
+  id: SectionId,
+  kind: "in" | "out",
+  dir: 1 | -1,
+) {
+  const style = sectionFx[id];
+  const way = dir === 1 ? "next" : "prev";
+  return `fx-${style}-${kind}-${way}`;
+}
+
 function Section({
   id,
   active,
+  leaving,
+  dir,
   children,
 }: {
   id: SectionId;
   active: SectionId;
+  leaving: SectionId | null;
+  dir: 1 | -1;
   children: ReactNode;
 }) {
   const shown = id === active;
+  const isLeaving = id === leaving;
+  const visible = shown || isLeaving;
   const [play, setPlay] = useState(0);
 
   useEffect(() => {
@@ -32,22 +56,36 @@ function Section({
     return () => window.cancelAnimationFrame(frame);
   }, [shown]);
 
+  const turn = isLeaving
+    ? turnClass(id, "out", dir)
+    : leaving
+      ? turnClass(id, "in", dir)
+      : "";
+
   return (
-    <section
-      id={id}
-      className={`absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-y-contain px-5 pt-10 pb-32 transition-opacity duration-500 ${
-        shown ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"
+    <div
+      className={`page-sheet absolute inset-0 ${turn} ${
+        visible
+          ? shown
+            ? "z-20"
+            : "z-10"
+          : "pointer-events-none z-0 opacity-0"
       }`}
     >
-      {shown && play > 0 ? (
-        <div
-          key={play}
-          className="reveal is-in flex min-h-full flex-col justify-center py-8 text-center"
-        >
-          {children}
-        </div>
-      ) : null}
-    </section>
+      <section
+        id={id}
+        className="h-full overflow-y-auto overflow-x-hidden overscroll-y-contain px-5 pt-10 pb-32"
+      >
+        {visible && play > 0 ? (
+          <div
+            key={play}
+            className="reveal is-in flex min-h-full flex-col justify-center py-8 text-center"
+          >
+            {children}
+          </div>
+        ) : null}
+      </section>
+    </div>
   );
 }
 
@@ -109,11 +147,19 @@ export function Invitation() {
   const lockedRef = useRef(false);
   const touchStart = useRef({ x: 0, y: 0 });
   const [active, setActive] = useState<SectionId>("home");
+  const [leaving, setLeaving] = useState<SectionId | null>(null);
+  const [dir, setDir] = useState<1 | -1>(1);
   const pageIndex = sections.indexOf(active);
 
   function goTo(id: SectionId) {
+    const from = sections.indexOf(activeRef.current);
+    const to = sections.indexOf(id);
+    if (from === to) return;
+    setDir(to > from ? 1 : -1);
+    setLeaving(activeRef.current);
     activeRef.current = id;
     setActive(id);
+    window.setTimeout(() => setLeaving(null), 800);
   }
 
   function shift(delta: number) {
@@ -125,7 +171,7 @@ export function Invitation() {
     goTo(next);
     window.setTimeout(() => {
       lockedRef.current = false;
-    }, 550);
+    }, 800);
   }
 
   function activeScroller() {
@@ -161,7 +207,7 @@ export function Invitation() {
     <div className="relative h-full overflow-hidden">
       <div
         ref={pageRef}
-        className="relative h-full overflow-hidden"
+        className="page-stage relative h-full overflow-hidden"
         onTouchStart={(event) => {
           touchStart.current = {
             x: event.touches[0].clientX,
@@ -185,11 +231,11 @@ export function Invitation() {
           if (dy > 0 && atTop) shift(-1);
         }}
       >
-        <Section id="home" active={active}>
+        <Section id="home" active={active} leaving={leaving} dir={dir}>
           <CoupleHome />
         </Section>
 
-        <Section id="schedule" active={active}>
+        <Section id="schedule" active={active} leaving={leaving} dir={dir}>
           <p className="reveal-line d1 readable font-sans text-sm font-light tracking-[0.28em] uppercase">
             Event
           </p>
@@ -251,21 +297,21 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="gallery" active={active}>
+        <Section id="gallery" active={active} leaving={leaving} dir={dir}>
           <p className="reveal-line d1 readable font-sans text-sm font-light tracking-[0.28em] uppercase">
             Galery
           </p>
           <p className="reveal-line d2 readable mt-1 mb-5 font-sans text-xl font-bold tracking-[0.18em] uppercase">
             {wedding.couple.partnerOne} & {wedding.couple.partnerTwo}
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-5">
             <Image
               src="/asset/gallery_1.webp"
               alt={`${wedding.couple.partnerOne} & ${wedding.couple.partnerTwo} 1`}
               width={320}
               height={314}
               className="reveal-photo d3 h-auto max-w-none -mr-5"
-              style={{ width: 160 }}
+              style={{ width: 180 }}
             />
             <Image
               src="/asset/gallery_2.webp"
@@ -273,7 +319,7 @@ export function Invitation() {
               width={390}
               height={331}
               className="reveal-photo d4 h-auto max-w-none -ml-5"
-              style={{ width: 195 }}
+              style={{ width: 210 }}
             />
             <Image
               src="/asset/gallery_3.webp"
@@ -309,7 +355,7 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="love" active={active}>
+        <Section id="love" active={active} leaving={leaving} dir={dir}>
           <p className="reveal-line d1 readable font-script text-6xl leading-none">
             D<span className="text-gold">&</span>F
           </p>
@@ -327,40 +373,38 @@ export function Invitation() {
           </p>
         </Section>
 
-        <Section id="gift" active={active}>
+        <Section id="gift" active={active} leaving={leaving} dir={dir}>
           <p className="reveal-line d1 readable font-sans text-lg font-bold tracking-[0.2em] uppercase">
             Send Gift
           </p>
-          <div className="reveal-photo-zoom d2 mx-auto mt-6 w-54 rounded-2xl bg-white p-3">
-            <img
-              src={wedding.giftQr}
-              alt="QR send gift"
-              width={240}
-              height={240}
-              className="h-auto w-full"
+          <div className="relative mt-10">
+            <Image
+              src="/asset/gift.webp"
+              alt=""
+              width={400}
+              height={429}
+              className="reveal-photo-zoom-lg d2 pointer-events-none absolute inset-y-0 right-0 h-full w-auto max-w-[58%] object-contain object-right mix-blend-screen"
             />
+            <div className="relative z-10 space-y-6 text-left">
+              {wedding.gifts.map((gift, index) => (
+                <div
+                  key={gift.bank}
+                  className={`reveal-line ${index === 0 ? "d2" : "d3"}`}
+                >
+                  <p className="readable font-sans text-[17px] font-bold">
+                    {gift.bank}
+                  </p>
+                  <p className="readable-soft mt-1.5 font-sans text-[15px]">
+                    Nama : <span className="font-bold text-white">{gift.name}</span>
+                  </p>
+                  <p className="readable-soft mt-0.5 font-sans text-[15px]">
+                    No. Rekening :{" "}
+                    <span className="font-bold text-white">{gift.number}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="mt-6 space-y-5 text-left">
-            {wedding.gifts.map((gift, index) => (
-              <div
-                key={gift.bank}
-                className={`reveal-line ${index === 0 ? "d3" : "d4"}`}
-              >
-                <p className="readable font-sans text-base font-bold">
-                  {gift.bank}
-                </p>
-                <p className="readable-soft mt-1 font-sans text-[15px]">
-                  Nama : {gift.name}
-                </p>
-                <p className="readable-soft mt-0.5 font-sans text-[15px]">
-                  No. Rekening : {gift.number}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p className="reveal-line d5 readable mt-8 font-script text-6xl leading-none">
-            D<span className="text-gold">&</span>F
-          </p>
         </Section>
       </div>
 
